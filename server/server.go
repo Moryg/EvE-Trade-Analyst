@@ -25,6 +25,7 @@ func (s *Server) Start(routeLoaders []RouteLoader) error {
     loader(router)
   }
 
+  log.Printf("Listening to localhost:%d", s.Port)
   log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", s.Port), router))
 
   return nil

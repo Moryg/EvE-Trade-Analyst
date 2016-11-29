@@ -2,15 +2,13 @@ package main
 
 import (
   "log"
-
   "github.com/moryg/eve_analyst/server"
+  . "github.com/moryg/eve_analyst/config"
 )
 
 func main() {
-  s := server.Server{8888}
+  s := server.Server{Config.HttpPort}
   routes := []server.RouteLoader {}
 
   log.Fatal(s.Start(routes))
-
-  // httpServer.Start(8001, routes)
 }
