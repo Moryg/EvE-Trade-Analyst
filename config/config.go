@@ -8,11 +8,17 @@ import (
 )
 
 type DBConfig struct {
-  Username string
   Password string
+  Username string
+}
+
+type ApiConfig struct {
+  RPS         int
+  Parallel    int
 }
 
 type Cfg struct {
+  EveAPI   ApiConfig
   HttpPort int
   MySQL    DBConfig
 }
