@@ -1,1 +1,1 @@
-eve_analyst
+A pet project I'm using to learn Go. Using EvE online's api to obtain ingame market data and analyse potential trade routes.
