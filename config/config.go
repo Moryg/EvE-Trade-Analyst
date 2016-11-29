@@ -4,11 +4,14 @@ import (
   "io/ioutil"
   "encoding/json"
   "fmt"
-  "os"
+  "log"
 )
 
 type DBConfig struct {
+  Address  string
+  Database string
   Password string
+  Port     int
   Username string
 }
 
@@ -25,13 +28,17 @@ type Cfg struct {
 
 var Config *Cfg
 
+func (c DBConfig) String() string {
+  return fmt.Sprintf("%s:%s@tcp(%s:%d)/%s", c.Username,
+    c.Password, c.Address, c.Port, c.Database)
+}
+
 func init() {
   Config = new(Cfg)
   raw, err := ioutil.ReadFile("./config.json")
 
   if err != nil {
-    fmt.Println("config" + err.Error())
-    os.Exit(1)
+    log.Fatal("config" + err.Error())
   }
 
   json.Unmarshal(raw, &Config)

@@ -2,7 +2,6 @@ package apiqueue
 
 import (
   "log"
-  "os"
   "time"
 
   . "github.com/moryg/eve_analyst/config"
@@ -18,11 +17,9 @@ type IRequest interface {
 func Start() {
   if (Config.EveAPI.RPS < 1) {
     log.Fatal("Missing EvE API Requests per second limit in config.json")
-    os.Exit(1)
   }
   if (Config.EveAPI.Parallel < 1) {
     log.Fatal("Missing EvE API parralel requests limit in config.json")
-    os.Exit(1)
   }
 
   queue = make(chan IRequest, 10000)
