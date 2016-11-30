@@ -32,3 +32,12 @@ func GetValidToken(userId int) UserToken {
 
   return tokens[userId]
 }
+
+func (u *UserToken) Invalidate() {
+  u.RefreshToken = ""
+  usr := GetValidToken(u.Id)
+  usr.RefreshToken = ""
+  usr.AccessToken = ""
+  usr.ValidTo = time.Now().Add(time.Second * 5)
+  tokens[u.Id] = usr
+}

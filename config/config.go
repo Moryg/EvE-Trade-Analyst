@@ -16,8 +16,9 @@ type DBConfig struct {
 }
 
 type ApiConfig struct {
-  RPS         int
+  BasicAuth   string
   Parallel    int
+  RPS         int
 }
 
 type Cfg struct {
