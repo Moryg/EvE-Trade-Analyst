@@ -15,5 +15,11 @@ func main() {
   s := server.Server{Config.HttpPort}
   routes := []server.RouteLoader {}
 
-  log.Fatal(s.Start(routes))
+  _ = s
+  _ = routes
+
+  log.Printf("Token 1: \"%s\"", apiqueue.GetValidToken(1))
+  log.Printf("Token 2: \"%s\"", apiqueue.GetValidToken(2))
+  log.Printf("Token 1: \"%s\"", apiqueue.GetValidToken(1))
+  // log.Fatal(s.Start(routes))
 }

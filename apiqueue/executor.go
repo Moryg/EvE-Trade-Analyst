@@ -1,7 +1,6 @@
 package apiqueue
 
 import (
-  "time"
 )
 
 
@@ -10,18 +9,6 @@ func executor() {
   for {
     r = <- queue
 
-    if r.RequiresAuth() {
-      // get valid token
-    }
-
-    rps <- false
-    defer decrementRPS()
-
     r.Execute()
   }
-}
-
-func decrementRPS() {
-  time.Sleep(time.Second)
-  <- rps
 }
