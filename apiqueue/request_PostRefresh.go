@@ -30,7 +30,7 @@ func (r RefreshAccessToken) Execute() {
   js, err := json.Marshal(rbody)
   if err != nil {
     usr.Invalidate()
-    log.Printf("Refresh Token json encode error user: %d", usr.Id)
+    log.Printf("(PostRefresh) Json encode error usr: %d", usr.Id)
     return;
   }
 
@@ -38,13 +38,31 @@ func (r RefreshAccessToken) Execute() {
   req, _ := http.NewRequest("POST", "http://localhost:8888/oauth/token", bytes.NewReader(js))
   req.Header.Set("Authorization", basicAuth)
   req.Header.Set("Content-Type", "application/json")
-  _, err = client.Do(req)
+  rsp, err := client.Do(req)
 
   if err != nil {
-    log.Printf("Invalid refresh token user %d", usr.Id)
+    log.Printf("(PostRefresh) Invalid Rtoken, usr %d", usr.Id)
     usr.Invalidate()
     return
   }
+
+  defer rsp.Body.Close()
+
+  var rspBody struct{
+    Atoken string `json:"access_token"`
+    Type   string `json:"token_type"`
+    Expiry int    `json:"expires_in"`
+    Ref    string `json:"refresh_token"`
+  }
+
+  // js = json.Unmarshal(rsp.Body, rspBody)
+  err = json.NewDecoder(rsp.Body).Decode(&rspBody)
+  if err != nil {
+    log.Println("(PostRefresh) JSON Decode error" + err.Error())
+    return
+  }
+
+  usr.NewAccessToken(rspBody.Atoken, rspBody.Expiry)
 }
 
 func (r RefreshAccessToken) RequiresAuth() bool {

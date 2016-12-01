@@ -9,9 +9,14 @@ func executor() {
   var r IRequest
   for {
     r = <- queue
-    rps <- false
 
+    if r.RequiresAuth() {
+      // get valid token
+    }
+
+    rps <- false
     defer decrementRPS()
+
     r.Execute()
   }
 }

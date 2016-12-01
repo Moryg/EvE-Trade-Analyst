@@ -41,3 +41,12 @@ func (u *UserToken) Invalidate() {
   usr.ValidTo = time.Now().Add(time.Second * 5)
   tokens[u.Id] = usr
 }
+
+func (u UserToken) NewAccessToken(aToken string, duration int) {
+  u.AccessToken = aToken
+  if duration > 5 {
+    duration = duration - 5
+  }
+  u.ValidTo = time.Now().Add(time.Second * time.Duration(duration))
+  tokens[u.Id] = u
+}
