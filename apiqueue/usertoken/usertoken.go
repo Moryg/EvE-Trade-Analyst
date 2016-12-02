@@ -7,6 +7,7 @@ import (
   "net/http"
   "sync"
   "log"
+  "os"
 
   "github.com/moryg/eve_analyst/database"
   "github.com/moryg/eve_analyst/apiqueue/ratelimit"
@@ -34,7 +35,9 @@ type resBody struct{
   Ref    string `json:"refresh_token"`
 }
 
-var basicAuth string
+var (
+  basicAuth, baseURL string
+)
 
 /**
  * Bootup function
@@ -44,6 +47,7 @@ func init() {
     log.Fatal("Missing EvE API Basic auth code in config.json")
   }
 
+  baseURL = os.Getenv("API")
   basicAuth = Config.EveAPI.BasicAuth
 }
 
@@ -82,15 +86,15 @@ func (t *UserToken) RefreshToken() {
   client := &http.Client{}
   req, err := http.NewRequest(
     "POST",
-    "http://localhost:8888/oauth/token",
+    (baseURL + "/oauth/token"),
     bytes.NewReader(jBody),
   )
   if err != nil {
     t.rToken = ""
-    log.Println("usertoken.Refresh:" + err.Error())
+    log.Println("usertoken.Refresh json encode:" + err.Error())
     return
   }
-  req.Header.Set("Authorization", basicAuth)
+  req.Header.Set("Authorization", "Basic " + basicAuth)
   req.Header.Set("Content-Type", "application/json")
 
   // Execute the request
@@ -100,7 +104,7 @@ func (t *UserToken) RefreshToken() {
 
   // Handle response
   if err != nil {
-    log.Println("usertoken.Refresh:" + err.Error())
+    log.Println("usertoken.Refresh request exec:" + err.Error())
     t.rToken = ""
     return
   }
@@ -112,7 +116,7 @@ func (t *UserToken) RefreshToken() {
 
   // TODO - check for error msg in json
   if err != nil {
-    log.Println("usertoken.Refresh:" + err.Error())
+    log.Println("usertoken.Refresh rsp decode:" + err.Error())
     t.rToken = ""
     return
   }

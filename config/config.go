@@ -5,6 +5,7 @@ import (
   "encoding/json"
   "fmt"
   "log"
+  "os"
 )
 
 type DBConfig struct {
@@ -35,6 +36,7 @@ func (c DBConfig) String() string {
 }
 
 func init() {
+  os.Setenv("API", "http://localhost:8888")
   Config = new(Cfg)
   raw, err := ioutil.ReadFile("./config.json")
 
