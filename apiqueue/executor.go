@@ -1,14 +1,12 @@
 package apiqueue
 
-import (
-)
-
+import ()
 
 func executor() {
-  var r IRequest
-  for {
-    r = <- queue
+	var r IRequest
+	for {
+		r = <-queue
 
-    r.Execute()
-  }
+		r.Execute()
+	}
 }
