@@ -35,7 +35,7 @@ func init() {
 		"LIMIT ?, ?;" // Page values
 }
 
-func GetOverPricedPage(buyId, sellId, page int) []CompItem {
+func GetOverPricedPage(buyId, sellId int64, page int) []CompItem {
 	var items []CompItem
 
 	perPage := 100
@@ -46,18 +46,7 @@ func GetOverPricedPage(buyId, sellId, page int) []CompItem {
 	page = page * perPage
 	err := DB.Select(&items, sql_GetOverPricedPage, buyId, sellId, page, perPage)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("getOverpriced query: " + err.Error())
 	}
-	// rows, err := DB.Query(sql_GetOverPricedPage, buyId, sellId, page, perPage)
-	// if err != nil {
-	// 	log.Println("market.getOverpriced exec: " + err.Error())
-	// 	return items
-	// }
-	// defer rows.Close()
-
-	// for rows.Next() {
-	// 	item := new(CompItem)
-	// 	// rows.Scan(...)
-	// }
 	return items
 }
