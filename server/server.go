@@ -1,32 +1,32 @@
 package server
 
 import (
-  "log"
-  "fmt"
-  "net/http"
-  "errors"
+	"errors"
+	"fmt"
+	"log"
+	"net/http"
 
-  "github.com/julienschmidt/httprouter"
+	. "github.com/moryg/eve_analyst/server/types"
+
+	"github.com/julienschmidt/httprouter"
 )
 
 type Server struct {
-  Port  int
+	Port int
 }
 
-type RouteLoader func(*httprouter.Router) *httprouter.Router
-
 func (s *Server) Start(routeLoaders []RouteLoader) error {
-  if (s.Port == 0) {
-    return errors.New("Server port not set")
-  }
+	if s.Port == 0 {
+		return errors.New("Server port not set")
+	}
 
-  router := httprouter.New()
-  for _,loader := range routeLoaders {
-    loader(router)
-  }
+	router := httprouter.New()
+	for _, loader := range routeLoaders {
+		loader(router)
+	}
 
-  log.Printf("Listening to localhost:%d", s.Port)
-  log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", s.Port), router))
+	log.Printf("Listening to localhost:%d", s.Port)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", s.Port), router))
 
-  return nil
+	return nil
 }

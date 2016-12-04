@@ -1,16 +1,7 @@
 /**
- * Shared structures between various requests
+ * Common app structures
  */
-package requests
-
-import (
-	. "github.com/moryg/eve_analyst/ccptime"
-	. "github.com/moryg/eve_analyst/constants"
-)
-
-const (
-	DB_DATE = "test"
-)
+package shared
 
 type NextHref struct {
 	Url string `json:"href"`

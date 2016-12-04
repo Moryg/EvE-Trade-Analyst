@@ -2,6 +2,7 @@ package regionfull
 
 import (
 	"fmt"
+	"github.com/moryg/eve_analyst/apiqueue"
 	"time"
 )
 
@@ -17,7 +18,12 @@ type Request struct {
 	requestBatch chan bool
 }
 
-func New(regionID int) Request {
+func Update(id int) {
+	r := create(id)
+	apiqueue.Enqueue(r)
+}
+
+func create(regionID int) Request {
 	r := Request{}
 	r.regionID = regionID
 	r.page = 1
@@ -26,7 +32,7 @@ func New(regionID int) Request {
 }
 
 func (src *Request) newPage(page int) Request {
-	r := New(src.regionID)
+	r := create(src.regionID)
 	r.page = page
 	r.uid = src.uid
 	r.requestBatch = src.requestBatch

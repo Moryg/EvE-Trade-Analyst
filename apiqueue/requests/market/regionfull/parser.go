@@ -2,7 +2,7 @@ package regionfull
 
 import (
 	"encoding/json"
-	. "github.com/moryg/eve_analyst/apiqueue/requests"
+	. "github.com/moryg/eve_analyst/shared"
 	"net/http"
 )
 

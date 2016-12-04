@@ -1,4 +1,4 @@
-package ccptime
+package shared
 
 import (
 	"strings"

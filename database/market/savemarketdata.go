@@ -1,8 +1,8 @@
 package market
 
 import (
-	. "github.com/moryg/eve_analyst/apiqueue/requests"
 	. "github.com/moryg/eve_analyst/database"
+	. "github.com/moryg/eve_analyst/shared"
 	"log"
 	"strings"
 )
@@ -21,6 +21,10 @@ func SaveMarketData(batchID string, regionID int, c chan bool, orders []Order) {
 	row := "(?,?,?,?,?,?,?,?,NULL),"
 
 	for _, order := range orders {
+		if order.Buy {
+			// ignore buy orders for now
+			continue
+		}
 		query += row
 		inserts = append(inserts, order.Id, order.ItemID, order.StationID, regionID, order.Price, order.Volume, order.ExpiryDate(), batchID)
 	}

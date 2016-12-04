@@ -72,9 +72,10 @@ func (r *Request) execute() {
 
 	// Wait for all pages to finish
 	items = rsp.PageCount
-	for items > 1 {
+	for items > 0 {
 		<-r.requestBatch
 		items--
+		log.Printf("Region %d - %d pages remaining", r.regionID, items)
 	}
 
 	// Clean up duty
