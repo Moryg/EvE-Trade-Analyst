@@ -8,7 +8,8 @@ import (
 )
 
 func CleanMarketRegion(regionID int, batchID string) {
-	_, err := DB.Exec("UPDATE `orderSell` SET `deletedAt` = NOW() WHERE `regionId` = ? AND `batchId` <> ?", regionID, batchID)
+	// _, err := DB.Exec("UPDATE `orderSell` SET `deletedAt` = NOW() WHERE `regionId` = ? AND `batchId` <> ?", regionID, batchID)
+	_, err := DB.Exec("DELETE FROM `orderSell` WHERE `regionId` = ? AND `batchId` <> ?", regionID, batchID)
 	if err != nil {
 		log.Println("savemarketdata.clean: " + err.Error())
 	}
