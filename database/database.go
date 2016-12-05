@@ -9,10 +9,6 @@ import (
 	"sync"
 )
 
-func DevQuery() {
-
-}
-
 var (
 	DB   *sqlx.DB
 	lock *sync.Mutex
@@ -25,6 +21,8 @@ func init() {
 	}
 
 	DB = dbi
+	DB.SetMaxOpenConns(50)
+	DB.SetMaxIdleConns(5)
 	lock = new(sync.Mutex)
 }
 

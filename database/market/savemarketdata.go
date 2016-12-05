@@ -17,6 +17,12 @@ func CleanMarketRegion(regionID int, batchID string) {
 
 func SaveMarketData(batchID string, regionID int, c chan bool, orders []Order) {
 	var err error
+	defer func() {
+		c <- true
+	}()
+	if len(orders) == 0 {
+		return
+	}
 	query := "INSERT INTO `orderSell` (`id`, `itemId`, `stationId`, `regionID`, `price`, `volume`, `expiry`, `batchId`, `deletedAt`) VALUES "
 	inserts := []interface{}{}
 	row := "(?,?,?,?,?,?,?,?,NULL),"
@@ -39,8 +45,7 @@ func SaveMarketData(batchID string, regionID int, c chan bool, orders []Order) {
 	}
 
 	if err != nil {
-		log.Println(err)
+		log.Println(query)
+		log.Printf("sql.savemarket %d %s", regionID, err.Error())
 	}
-
-	c <- true
 }

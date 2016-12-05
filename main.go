@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/moryg/eve_analyst/apiqueue"
-	// "github.com/moryg/eve_analyst/apiqueue/control"
+	"github.com/moryg/eve_analyst/apiqueue/control"
 	. "github.com/moryg/eve_analyst/config"
 	"github.com/moryg/eve_analyst/server"
 	marketRoutes "github.com/moryg/eve_analyst/server/market/routes"
@@ -14,7 +14,7 @@ func main() {
 	// API Queue setup
 	apiqueue.Start()
 
-	// control.BootUp()
+	control.BootUp()
 
 	// Server setup
 	s := server.Server{Config.HttpPort}
