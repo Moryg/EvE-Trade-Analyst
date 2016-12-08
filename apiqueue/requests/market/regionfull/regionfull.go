@@ -3,6 +3,7 @@ package regionfull
 import (
 	"fmt"
 	"github.com/moryg/eve_analyst/apiqueue"
+	"github.com/moryg/eve_analyst/database/market/concatenator"
 	"time"
 )
 
@@ -15,7 +16,7 @@ type Request struct {
 	page         int
 	url          string
 	uid          string
-	requestBatch chan bool
+	requestBatch chan *concatenator.Region
 }
 
 func Update(id int) {
@@ -43,9 +44,9 @@ func (r Request) Execute() {
 	(&r).execute()
 }
 
-func (r *Request) requestComplete() {
+func (r *Request) requestComplete(data *concatenator.Region) {
 	if r.requestBatch != nil {
-		r.requestBatch <- false
+		r.requestBatch <- data
 	}
 }
 

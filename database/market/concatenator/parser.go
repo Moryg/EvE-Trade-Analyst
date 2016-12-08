@@ -49,6 +49,8 @@ ITERATOR:
 			this.err = errors.New("Market data does not contain nested objects")
 		case this.skipToNextOrder && ch != '}':
 			continue
+		case ch == ' ' || ch == '\t' || ch == '\n':
+			this.handleWhiteSpace(ch)
 		case ch == '"' || this.inWord && this.nonStringWord && (ch == ',' || ch == '}'):
 			this.wordToggle(ch)
 		case this.inWord:
@@ -60,7 +62,7 @@ ITERATOR:
 		case ch == '}':
 			this.checkObjComplete(ch)
 		case ch == ',':
-			this.handleComma()
+			this.handleComma(ch)
 		case ch == ':' && this.skipToVal:
 			continue
 		case this.skipToVal:
@@ -89,9 +91,9 @@ func (this *parser) addChar(ch byte) {
 	this.word = append(this.word, ch)
 }
 
-func (this *parser) handleComma() {
+func (this *parser) handleComma(ch byte) {
 	if this.inWord {
-		this.addChar(',')
+		this.addChar(ch)
 		return
 	}
 }
@@ -198,7 +200,14 @@ func (this *parser) checkObjComplete(ch byte) {
 	}
 
 	if this.itemId == 0 || this.volume == 0 || this.price == 0 || this.stationId == 0 {
-		this.err = errors.New("Missing values for object ending at " + string(this.ii))
+		errStr := "Missing values for object ending at " +
+			string(ch) + " " + strconv.Itoa(this.ii) +
+			", values: (" +
+			strconv.FormatUint(this.itemId, 10) + "," +
+			strconv.FormatUint(this.volume, 10) + "," +
+			strconv.FormatFloat(this.price, 'f', 2, 64) + "," +
+			strconv.FormatUint(this.stationId, 10) + ")"
+		this.err = errors.New(errStr)
 		return
 	}
 
@@ -217,4 +226,15 @@ func (this *parser) skipOrder() {
 	this.stationId = 0
 	this.itemId = 0
 	this.objectCount--
+}
+
+func (this *parser) handleWhiteSpace(ch byte) {
+	if ch == '\n' && this.nonStringWord && this.inWord {
+		this.wordToggle(ch)
+		return
+	}
+	if this.inWord {
+		this.addChar(ch)
+		return
+	}
 }

@@ -8,9 +8,7 @@ import (
 )
 
 type rgJson struct {
-	Items     *concatenator.Region `json:"items"`
-	ItemCount int                  `json:"totalCount"`
-	PageCount int                  `json:"pageCount"`
+	Items *concatenator.Region `json:"items"`
 }
 
 func TestParseJson(test *testing.T) {

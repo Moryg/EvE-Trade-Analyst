@@ -2,50 +2,53 @@ package market
 
 import (
 	. "github.com/moryg/eve_analyst/database"
-	. "github.com/moryg/eve_analyst/shared"
+	"github.com/moryg/eve_analyst/database/market/concatenator"
 	"log"
-	"strings"
+	"time"
 )
 
 func CleanMarketRegion(regionID int, batchID string) {
-	// _, err := DB.Exec("UPDATE `orderSell` SET `deletedAt` = NOW() WHERE `regionId` = ? AND `batchId` <> ?", regionID, batchID)
 	_, err := DB.Exec("DELETE FROM `orderSell` WHERE `regionId` = ? AND `batchId` <> ?", regionID, batchID)
 	if err != nil {
 		log.Println("savemarketdata.clean: " + err.Error())
+		return
+	}
+
+	_, err = DB.Exec("CALL `calculateStationData`(?);", regionID)
+	if err != nil {
+		log.Println("savemarketdata.clean: " + err.Error())
+		return
 	}
 }
 
-func SaveMarketData(batchID string, regionID int, c chan bool, orders []Order) {
-	var err error
-	defer func() {
-		c <- true
-	}()
-	if len(orders) == 0 {
-		return
-	}
-	query := "INSERT INTO `orderSell` (`id`, `itemId`, `stationId`, `regionID`, `price`, `volume`, `expiry`, `batchId`, `deletedAt`) VALUES "
-	inserts := []interface{}{}
-	row := "(?,?,?,?,?,?,?,?,NULL),"
+func SaveMarketData(data *concatenator.Region, regionId int) error {
+	sqlBase := "INSERT INTO `orderSell` (`stationId`, `itemId`, `regionId`, `min`, `mean`, `max`, `upFlag`) VALUES "
+	sqlEnd := " ON DUPLICATE KEY UPDATE `min` = VALUES(`min`), `max` = VALUES(`max`), `mean` = VALUES(`mean`), `upFlag` = 1;"
 
-	for _, order := range orders {
-		if order.Buy {
-			// ignore buy orders for now
-			continue
-		}
-		query += row
-		inserts = append(inserts, order.Id, order.ItemID, order.StationID, regionID, order.Price, order.Volume, order.ExpiryDate(), batchID)
+	t0 := time.Now()
+	sql, err := data.ConstructSQL()
+	log.Printf("Region %d query constructed, took me: %.3fs", regionId, time.Now().Sub(t0).Seconds())
+	if err != nil {
+		return err
 	}
 
-	query = strings.TrimSuffix(query, ",")
-	query += "ON DUPLICATE KEY UPDATE `itemId`=VALUES(`itemId`),`stationId`=VALUES(`stationId`),`price`=VALUES(`price`),`volume`=VALUES(`volume`),`expiry`=VALUES(`expiry`),`batchId`=VALUES(`batchId`),`regionID`=VALUES(`regionID`);"
-	stmt, err := DB.Prepare(query)
-
-	if err == nil {
-		_, err = stmt.Exec(inserts...)
-	}
+	sql = sqlBase + sql + sqlEnd
+	t0 = time.Now()
+	_, err = DB.Exec(sql)
+	log.Printf("Region %d saved, took me: %.3fs", regionId, time.Now().Sub(t0).Seconds())
 
 	if err != nil {
-		log.Println(query)
-		log.Printf("sql.savemarket %d %s", regionID, err.Error())
+		return err
 	}
+
+	cleanUp1 := "DELETE FROM `orderSell` WHERE `regionId` = ? AND `upFlag` = 0;"
+	cleanUp2 := "UPDATE `orderSell` SET `upFlag` = 0 WHERE `regionId` = ?;"
+
+	_, _ = DB.Exec(cleanUp1, regionId)
+	_, err = DB.Exec(cleanUp2, regionId)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -1,7 +1,8 @@
 package concatenator
 
 import (
-// "math"
+	"fmt"
+	// "math"
 )
 
 type PriceStats struct {
@@ -18,13 +19,34 @@ func NewPrice(price float64, volume uint64) *PriceStats {
 	return p
 }
 
-func (p *PriceStats) Add(price float64, volume uint64) {
-	p.Volume += volume
-	p.Mean += (price - p.Mean) * float64(volume) / float64(p.Volume)
-	if p.Max < price {
-		p.Max = price
+func (this *PriceStats) addAvg(price float64, volume uint64) {
+	this.Volume += volume
+	this.Mean += (price - this.Mean) * float64(volume) / float64(this.Volume)
+}
+
+func (this *PriceStats) cmpMin(price float64) {
+	if this.Min > price {
+		this.Min = price
 	}
-	if p.Min > price {
-		p.Min = price
+}
+func (this *PriceStats) cmpMax(price float64) {
+	if this.Max < price {
+		this.Max = price
 	}
+}
+
+func (this *PriceStats) Add(price float64, volume uint64) {
+	this.addAvg(price, volume)
+	this.cmpMax(price)
+	this.cmpMin(price)
+}
+
+func (this *PriceStats) Merge(other *PriceStats) {
+	this.addAvg(other.Mean, other.Volume)
+	this.cmpMax(other.Max)
+	this.cmpMin(other.Min)
+}
+
+func (this *PriceStats) String() string {
+	return fmt.Sprintf("%.2f, %.2f, %.2f", this.Min, this.Mean, this.Max)
 }

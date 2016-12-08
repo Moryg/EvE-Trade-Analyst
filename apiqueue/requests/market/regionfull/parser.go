@@ -2,14 +2,15 @@ package regionfull
 
 import (
 	"encoding/json"
-	. "github.com/moryg/eve_analyst/shared"
+	"github.com/moryg/eve_analyst/database/market/concatenator"
+	// . "github.com/moryg/eve_analyst/shared"
 	"net/http"
 )
 
 type rgJson struct {
-	Items     []Order `json:"items"`
-	ItemCount int     `json:"totalCount"`
-	PageCount int     `json:"pageCount"`
+	Items     concatenator.Region `json:"items"`
+	ItemCount int                 `json:"totalCount"`
+	PageCount int                 `json:"pageCount"`
 }
 
 func parseResBody(res *http.Response) (*rgJson, error) {

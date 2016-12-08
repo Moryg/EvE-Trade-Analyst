@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/moryg/eve_analyst/apiqueue"
 	"github.com/moryg/eve_analyst/apiqueue/ratelimit"
-	"github.com/moryg/eve_analyst/database/market"
+	db "github.com/moryg/eve_analyst/database/market"
+	"github.com/moryg/eve_analyst/database/market/concatenator"
 	"log"
-	"math"
 	"net/http"
 	"os"
 )
@@ -14,6 +14,7 @@ import (
 func (r *Request) execute() {
 	// Prepare and execute the request
 	r.url = fmt.Sprintf(baseUrl, os.Getenv("API"), r.regionID, r.page)
+	// r.url = "http://localhost:8888/market/1/orders/all/"
 	ratelimit.Add()
 	res, err := http.Get(r.url)
 	ratelimit.Sub()
@@ -21,7 +22,7 @@ func (r *Request) execute() {
 	// Request error
 	if err != nil {
 		log.Println("regionfull.execute: " + err.Error())
-		r.requestComplete()
+		r.requestComplete(concatenator.NewRegion())
 		return
 	}
 
@@ -29,13 +30,13 @@ func (r *Request) execute() {
 	rsp, err := parseResBody(res)
 	if err != nil {
 		log.Println("regionfull.execute parse:" + err.Error())
-		r.requestComplete()
+		r.requestComplete(concatenator.NewRegion())
 		return
 	}
 
 	// If this is the first page, start a channel
 	if r.requestBatch == nil {
-		r.requestBatch = make(chan bool, rsp.PageCount)
+		r.requestBatch = make(chan *concatenator.Region, rsp.PageCount)
 	}
 
 	// Enqueue all other pages if there are any
@@ -45,39 +46,26 @@ func (r *Request) execute() {
 		}
 	}
 
-	// Chunk and save the data
-	chunk := 2000
-	items := len(rsp.Items)
-	splits := int(math.Ceil(float64(items) / float64(chunk)))
-	innerChannel := make(chan bool, splits)
-	for start, end := 0, chunk; start < items-1; start, end = start+chunk, end+chunk {
-		if end > items {
-			end = items
-		}
-
-		go market.SaveMarketData(r.uid, r.regionID, innerChannel, rsp.Items[start:end])
-	}
-
-	// Wait for all chunks  of this request to finish
-	for splits > 0 {
-		<-innerChannel
-		splits--
-	}
-
-	// Request data handling done if not first page
-	r.requestComplete()
 	if r.page != 1 {
+		r.requestComplete(&rsp.Items)
 		return
 	}
 
-	// Wait for all pages to finish
-	items = rsp.PageCount
+	mainData := rsp.Items
+	mainData.RegionID = r.regionID
+
+	items := rsp.PageCount - 1
+	var subData *concatenator.Region
 	for items > 0 {
-		<-r.requestBatch
+		subData = <-r.requestBatch
+		_, _ = subData.Prices[1][1]
 		items--
 		log.Printf("Region %d - %d pages remaining", r.regionID, items)
 	}
 
-	// Clean up duty
-	market.CleanMarketRegion(r.regionID, r.uid)
+	err = db.SaveMarketData(&mainData, r.regionID)
+	if err != nil {
+		log.Println(err)
+	}
+	return
 }
