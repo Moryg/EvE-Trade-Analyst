@@ -53,24 +53,22 @@ func (this *Region) Merge(other *Region) {
 }
 
 func (this *Region) ConstructSQL() (string, error) {
-	sql := ""
-	empty := true
 	if this.RegionID == 0 {
 		return "", errors.New("Region ID not set")
 	}
 
-	for stationId, station := range this.Prices {
-		empty = false
+	strParts := []string{}
 
+	for stationId, station := range this.Prices {
 		for itemId, price := range station {
 			// (`stationId`, `itemId`, `regionId`, `min`, `mean`, `max`, `upFlag`)
-			sql += fmt.Sprintf("(%d, %d, %d, %s, 1),", stationId, itemId, this.RegionID, price.String())
+			strParts = append(strParts, fmt.Sprintf("(%d, %d, %d, %s, 1)", stationId, itemId, this.RegionID, price.String()))
 		}
 	}
 
-	if empty {
+	if len(strParts) == 0 {
 		return "", errors.New("No orders in dataset")
 	}
 
-	return strings.TrimSuffix(sql, ","), nil
+	return strings.Join(strParts, ","), nil
 }

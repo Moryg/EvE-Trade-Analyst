@@ -4,7 +4,6 @@ import (
 	. "github.com/moryg/eve_analyst/database"
 	"github.com/moryg/eve_analyst/database/market/concatenator"
 	"log"
-	"time"
 )
 
 func CleanMarketRegion(regionID int, batchID string) {
@@ -25,17 +24,13 @@ func SaveMarketData(data *concatenator.Region, regionId int) error {
 	sqlBase := "INSERT INTO `orderSell` (`stationId`, `itemId`, `regionId`, `min`, `mean`, `max`, `upFlag`) VALUES "
 	sqlEnd := " ON DUPLICATE KEY UPDATE `min` = VALUES(`min`), `max` = VALUES(`max`), `mean` = VALUES(`mean`), `upFlag` = 1;"
 
-	t0 := time.Now()
 	sql, err := data.ConstructSQL()
-	log.Printf("Region %d query constructed, took me: %.3fs", regionId, time.Now().Sub(t0).Seconds())
 	if err != nil {
 		return err
 	}
 
 	sql = sqlBase + sql + sqlEnd
-	t0 = time.Now()
 	_, err = DB.Exec(sql)
-	log.Printf("Region %d saved, took me: %.3fs", regionId, time.Now().Sub(t0).Seconds())
 
 	if err != nil {
 		return err
