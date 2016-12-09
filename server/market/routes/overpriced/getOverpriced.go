@@ -31,8 +31,13 @@ func Get(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		page = 1
 	}
 
+	sort := query.Get("sort")
+	if sort == "" || sort != "min" && sort != "mean" {
+		sort = "min"
+	}
+
 	data := shared.CompHolder{}
-	data.Items = market.GetOverPricedPage(buyId, sellId, page)
+	data.Items = market.GetOverPricedPage(buyId, sellId, page, sort)
 	buf, err := (&data).MarshalJSON()
 
 	if err != nil {
