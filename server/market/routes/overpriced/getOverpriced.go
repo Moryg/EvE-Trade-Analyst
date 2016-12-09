@@ -10,23 +10,24 @@ import (
 	"strconv"
 )
 
-func Get(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func Get(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 	w.Header().Set("Content-Type", "application/json")
 
 	query := r.URL.Query()
-	buyId, err := strconv.ParseInt(query.Get("buy"), 10, 64)
-	if err != nil {
+	buyId, err := strconv.ParseInt(params.ByName("buyId"), 10, 64)
+	if err != nil || buyId == 0 {
 		shared.SendError(w, "Invalid buy station ID", 403)
 		return
 	}
-	sellId, err := strconv.ParseInt(query.Get("sell"), 10, 64)
-	if err != nil {
+
+	sellId, err := strconv.ParseInt(params.ByName("sellId"), 10, 64)
+	if err != nil || sellId == 0 {
 		shared.SendError(w, "Invalid selling station ID", 403)
 		return
 	}
 
 	page, err := strconv.Atoi(query.Get("page"))
-	if err != nil {
+	if err != nil || page == 1 {
 		page = 1
 	}
 

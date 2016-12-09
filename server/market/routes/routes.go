@@ -6,6 +6,6 @@ import (
 )
 
 func Load(r *httprouter.Router) *httprouter.Router {
-	r.GET("/api/market/overpriced", overpriced.Get)
+	r.GET("/api/market/overpriced/:buyId/:sellId", overpriced.Get)
 	return r
 }

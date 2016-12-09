@@ -6,16 +6,15 @@ import (
 )
 
 type CompItem struct {
-	ID        int     `db:"id"`
-	GroupID   int     `db:"groupID"`
-	Volume    float64 `db:"volume"`
+	ID        uint64  `db:"itemId"`
+	StationID uint64  `db:"stationId"`
 	Name      string  `db:"name"`
-	MinSell   float64 `db:"sellMin"`
-	MinBuy    float64 `db:"buyMin"`
-	MinRatio  float64 `db:"minRatio"`
-	MeanSell  float64 `db:"sellMean"`
-	MeanBuy   float64 `db:"buyMean"`
-	MeanRatio float64 `db:"meanRatio"`
+	MinSell   float64 `db:"sMin"`
+	MeanSell  float64 `db:"sMean"`
+	MinBuy    float64 `db:"bMin"`
+	MeanBuy   float64 `db:"bMean"`
+	MinRatio  float64 `db:"rMin"`
+	MeanRatio float64 `db:"rMean"`
 }
 
 type CompHolder struct {

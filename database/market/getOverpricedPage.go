@@ -9,30 +9,7 @@ import (
 var sql_GetOverPricedPage string
 
 func init() {
-	sql_GetOverPricedPage = "SELECT `item`.`id`, `item`.`groupID`, `item`.`volume`, `item`.`name`," +
-		"`sell`.`min` `sellMin`, `sell`.`mean` `sellMean`," +
-		"`buy`.`min` `buyMin`, `buy`.`mean` `buyMean`," +
-		"CAST((`sell`.`min` / `buy`.`min`)AS DECIMAL(20,2)) `minRatio`," +
-		"CAST((`sell`.`mean` / `buy`.`mean`)AS DECIMAL(20,2)) `meanRatio` " +
-		"FROM `item` " +
-		// Join BUY subselect
-		"JOIN (SELECT `itemId`," +
-		"MIN(`price`) `min`," +
-		"CAST(SUM(`price` * `volume`)/SUM(`volume`) AS DECIMAL(20,2)) `mean` " +
-		"FROM `orderSell` " +
-		"WHERE `stationID` = ? " + // Buy station ID
-		"GROUP BY `itemId`" +
-		") `buy` ON `buy`.`itemId` = `item`.`id` " +
-		// Join SELL subselect
-		"JOIN (SELECT `itemId`," +
-		"MIN(`price`) `min`," +
-		"CAST(SUM(`price` * `volume`)/SUM(`volume`) AS DECIMAL(20,2)) `mean` " +
-		"FROM `orderSell` " +
-		"WHERE `stationID` = ? " + // Sell station ID
-		"GROUP BY `itemId`" +
-		") `sell` ON `sell`.`itemId` = `item`.`id` " +
-		"ORDER BY `meanRatio` DESC " +
-		"LIMIT ?, ?;" // Page values
+	sql_GetOverPricedPage = "SELECT `buy`.`stationId`, `buy`.`itemId`, `buy`.`min` `bMin`, `buy`.`mean` `bMean`, `sell`.`min` `sMin`, `sell`.`mean` `sMean`, CAST(`sell`.`min` / `buy`.`min` AS DECIMAL(20,2)) `rMin`, CAST(`sell`.`mean` / `buy`.`mean` AS DECIMAL(20,2)) `rMean` FROM `orderSell` `buy` JOIN `orderSell` `sell` ON `sell`.`stationId` = ? AND `sell`.`itemId` = `buy`.`itemId` WHERE `buy`.`stationID` = ? ORDER BY `rMean` DESC LIMIT ?, ?;"
 }
 
 func GetOverPricedPage(buyId, sellId int64, page int) []CompItem {
