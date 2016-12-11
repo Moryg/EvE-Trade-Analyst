@@ -26,7 +26,7 @@ func (holder *CompHolder) MarshalJSON() ([]byte, error) {
 	buffer.WriteString("\"columns\":[\"itemId\",\"minSell\",\"minBuy\",\"minRatio\",\"meanSell\",\"meanBuy\",\"meanRatio\"],\"items\":[")
 	sep := ""
 	for _, item := range holder.Items {
-		buffer.WriteString(sep + fmt.Sprintf("[%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f]", item.ID, item.MinSell, item.MinBuy, item.MinRatio, item.MeanSell, item.MeanBuy, item.MeanRatio))
+		buffer.WriteString(fmt.Sprintf("%s[%d,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f]", sep, item.ID, item.MinSell, item.MinBuy, item.MinRatio, item.MeanSell, item.MeanBuy, item.MeanRatio))
 		sep = ","
 	}
 	buffer.WriteString("]}")
