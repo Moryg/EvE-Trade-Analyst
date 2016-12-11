@@ -1,7 +1,8 @@
 package overpriced
 
 import (
-	"fmt"
+	"encoding/json"
+	// "fmt"
 	"github.com/julienschmidt/httprouter"
 	"github.com/moryg/eve_analyst/database/market"
 	"github.com/moryg/eve_analyst/shared"
@@ -26,6 +27,11 @@ func Get(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 		return
 	}
 
+	if sellId == buyId {
+		shared.SendError(w, "Cannot buy and sell at the same station", 403)
+		return
+	}
+
 	page, err := strconv.Atoi(query.Get("page"))
 	if err != nil || page == 1 {
 		page = 1
@@ -38,11 +44,11 @@ func Get(w http.ResponseWriter, r *http.Request, params httprouter.Params) {
 
 	data := shared.CompHolder{}
 	data.Items = market.GetOverPricedPage(buyId, sellId, page, sort)
-	buf, err := (&data).MarshalJSON()
+	err = json.NewEncoder(w).Encode(&data)
 
 	if err != nil {
 		log.Printf("overpriced.GET json: %d %d %d - "+err.Error(), buyId, sellId, page)
 		shared.SendError(w, "Failed encoding json", 501)
 	}
-	fmt.Fprintln(w, string(buf))
+	// fmt.Fprintln(w, string(buf))
 }

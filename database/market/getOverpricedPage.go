@@ -11,7 +11,7 @@ var getOverPriceStmt *sqlx.Stmt
 
 func init() {
 	var err error
-	getOverPriceStmt, err = DB.Preparex("SELECT `buy`.`stationId`, `buy`.`itemId`, `buy`.`min` `bMin`, `buy`.`mean` `bMean`, `sell`.`min` `sMin`, `sell`.`mean` `sMean`, CAST(`sell`.`min` / `buy`.`min` AS DECIMAL(20,2)) `rMin`, CAST(`sell`.`mean` / `buy`.`mean` AS DECIMAL(20,2)) `rMean` FROM `orderSell` `buy` JOIN `orderSell` `sell` ON `sell`.`stationId` = ? AND `sell`.`itemId` = `buy`.`itemId` WHERE `buy`.`stationID` = ? ORDER BY (IF(? = 'mean', `rMean`, `rMin`)) DESC LIMIT ?, ?;")
+	getOverPriceStmt, err = DB.Preparex("SELECT `buy`.`itemId`, `item`.`name`, `buy`.`min` `bMin`, `buy`.`mean` `bMean`, `sell`.`min` `sMin`, `sell`.`mean` `sMean`, CAST(`sell`.`min` / `buy`.`min` AS DECIMAL(20,2)) `rMin`, CAST(`sell`.`mean` / `buy`.`mean` AS DECIMAL(20,2)) `rMean` FROM `orderSell` `buy` JOIN `orderSell` `sell` ON `sell`.`stationId` = ? AND `sell`.`itemId` = `buy`.`itemId` JOIN `item` ON `item`.`id` = `buy`.`itemId` WHERE `buy`.`stationID` = ? ORDER BY (IF(? = 'mean', `rMean`, `rMin`)) DESC LIMIT ?, ?;")
 
 	if err != nil {
 		log.Fatal("Failed preparing getOverPriced query statement")
