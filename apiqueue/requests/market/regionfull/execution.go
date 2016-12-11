@@ -58,7 +58,7 @@ func (r *Request) execute() {
 	var subData *concatenator.Region
 	for items > 0 {
 		subData = <-r.requestBatch
-		_, _ = subData.Prices[1][1]
+		mainData.Merge(subData)
 		items--
 		log.Printf("Region %d - %d pages remaining", r.regionID, items)
 	}
