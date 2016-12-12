@@ -1,42 +1,46 @@
 package regionfull
 
 import (
-	"fmt"
+	// "fmt"
 	"github.com/moryg/eve_analyst/apiqueue"
 	"github.com/moryg/eve_analyst/database/market/concatenator"
+	// "time"
+	db "github.com/moryg/eve_analyst/database/market"
+	"log"
 	"time"
 )
 
 const (
-	baseUrl string = "%s/market/%d/orders/all/?page=%d"
+	// baseUrl string = "https://crest-tq.eveonline.com/market/%d/orders/all/?page=%d" // CREST
+	baseUrl string = "https://esi.tech.ccp.is/latest/markets/%d/orders/?page=%d" // ESI
 )
 
 type Request struct {
-	regionID     int
-	page         int
-	url          string
-	uid          string
-	requestBatch chan *concatenator.Region
+	regionID   uint64
+	page       int
+	url        string
+	uid        string
+	Statistics *concatenator.Region
+	RawOrders  []string
 }
 
-func Update(id int) {
+func Update(id uint64) {
 	r := create(id)
 	apiqueue.Enqueue(r)
 }
 
-func create(regionID int) Request {
+func create(regionID uint64) Request {
 	r := Request{}
 	r.regionID = regionID
 	r.page = 1
-	r.uid = fmt.Sprintf("rugfull_%d_%d", regionID, time.Now().Unix())
 	return r
 }
 
-func (src *Request) newPage(page int) Request {
+func (src *Request) newPage() Request {
 	r := create(src.regionID)
-	r.page = page
-	r.uid = src.uid
-	r.requestBatch = src.requestBatch
+	r.page = src.page + 1
+	r.Statistics = src.Statistics
+	r.RawOrders = src.RawOrders
 	return r
 }
 
@@ -44,9 +48,17 @@ func (r Request) Execute() {
 	(&r).execute()
 }
 
-func (r *Request) requestComplete(data *concatenator.Region) {
-	if r.requestBatch != nil {
-		r.requestBatch <- data
+func (this *Request) requestComplete(err error) {
+	log.Printf("Done with region %d", this.regionID)
+	if err != nil {
+		log.Printf("regionfull.complete: region %d, error:%s\n", this.regionID, err.Error())
+	}
+
+	t0 := time.Now()
+	err = db.SaveRegionStatistics(this.Statistics, this.regionID)
+	log.Printf("Saving region %d to DB took %.3fs", this.regionID, time.Now().Sub(t0).Seconds())
+	if err != nil {
+		log.Printf("regionfull.complete: region %d, error:%s\n", this.regionID, err.Error())
 	}
 }
 

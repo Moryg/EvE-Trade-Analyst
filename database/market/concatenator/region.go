@@ -8,11 +8,12 @@ import (
 
 type Region struct {
 	Prices   map[uint64]map[uint64]*PriceStats
-	RegionID int
+	RegionID uint64
 }
 
-func NewRegion() *Region {
+func NewRegion(id uint64) *Region {
 	this := new(Region)
+	this.RegionID = id
 	this.Prices = make(map[uint64]map[uint64]*PriceStats)
 	return this
 }

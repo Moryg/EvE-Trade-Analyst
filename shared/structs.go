@@ -1,27 +1,25 @@
-/**
- * Common app structures
- */
 package shared
+
+import (
+	"time"
+)
 
 type NextHref struct {
 	Url string `json:"href"`
 }
 
-func (n NextHref) String() string {
-	return n.Url
-}
-
 type Order struct {
-	Buy       bool    `json:"buy"`
-	Issued    CCPTime `json:"issued"`
-	Price     float32 `json:"price"`
-	Volume    int64   `json:"volume"`
-	Duration  int     `json:"duration"`
-	Id        int     `json:"id"`
-	StationID int     `json:"stationID"`
-	ItemID    int     `json:"type"`
+	VInitial  uint64    `json:"volume_total"`
+	Volume    uint64    `json:"volume_remain"`
+	Created   time.Time `json:"issued"`
+	Id        uint64    `json:"order_id"`
+	ItemId    uint64    `json:"type_id"`
+	StationId uint64    `json:"location_id"`
+	Buy       bool      `json:"is_buy_order"`
+	Price     float64   `json:"price"`
+	Duration  int       `json:"duration"`
 }
 
-func (o *Order) ExpiryDate() string {
-	return o.Issued.AddDate(0, 0, o.Duration).Format(DB_DATETIME)
+func (this *Order) ExpiryDate() string {
+	return this.Created.AddDate(0, 0, this.Duration).Format(DB_DATETIME)
 }

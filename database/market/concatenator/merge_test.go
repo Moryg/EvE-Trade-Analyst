@@ -6,10 +6,10 @@ import (
 )
 
 func Test_RegionMerge(test *testing.T) {
-	regA := concatenator.NewRegion()
+	regA := concatenator.NewRegion(1)
 	regA.Add(100, 100, 1, 1)
 	regA.Add(100, 100, 2, 1)
-	regB := concatenator.NewRegion()
+	regB := concatenator.NewRegion(1)
 	regB.Add(300, 100, 1, 1)
 
 	regA.Merge(regB)
@@ -24,4 +24,8 @@ func Test_RegionMerge(test *testing.T) {
 		test.Log("Incorrect mean on 1-1 after merge")
 		test.FailNow()
 	}
+}
+
+func Test_AsyncMerge(test *testing.T) {
+
 }

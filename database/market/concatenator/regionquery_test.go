@@ -7,7 +7,7 @@ import (
 )
 
 func TestRegionQuery(test *testing.T) {
-	region := concatenator.NewRegion()
+	region := concatenator.NewRegion(1)
 
 	result, err := region.ConstructSQL()
 	if err == nil {

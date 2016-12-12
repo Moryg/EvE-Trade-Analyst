@@ -9,9 +9,10 @@ func BootUp() {
 }
 
 func MarketFull() {
+	// return
 	// TMP - do not update other regions for now
 	regionfull.Update(10000002) // The Forge
-	regionfull.Update(10000047) // Providence
+	// regionfull.Update(10000047) // Providence
 	// regionfull.Update(10000043) // Domain
 	// regionfull.Update(10000001) // Derelik
 	// regionfull.Update(10000011)

@@ -6,7 +6,7 @@ import (
 	"log"
 )
 
-func CleanMarketRegion(regionID int, batchID string) {
+func CleanMarketRegion(regionID uint64, batchID string) {
 	_, err := DB.Exec("DELETE FROM `orderSell` WHERE `regionId` = ? AND `batchId` <> ?", regionID, batchID)
 	if err != nil {
 		log.Println("savemarketdata.clean: " + err.Error())
@@ -20,7 +20,7 @@ func CleanMarketRegion(regionID int, batchID string) {
 	}
 }
 
-func SaveMarketData(data *concatenator.Region, regionId int) error {
+func SaveRegionStatistics(data *concatenator.Region, regionId uint64) error {
 	sqlBase := "INSERT INTO `orderSell` (`stationId`, `itemId`, `regionId`, `min`, `mean`, `max`, `upFlag`) VALUES "
 	sqlEnd := " ON DUPLICATE KEY UPDATE `min` = VALUES(`min`), `max` = VALUES(`max`), `mean` = VALUES(`mean`), `upFlag` = 1;"
 

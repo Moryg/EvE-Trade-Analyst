@@ -4,17 +4,15 @@ import (
 	"fmt"
 	"github.com/moryg/eve_analyst/apiqueue"
 	"github.com/moryg/eve_analyst/apiqueue/ratelimit"
-	db "github.com/moryg/eve_analyst/database/market"
 	"github.com/moryg/eve_analyst/database/market/concatenator"
 	"log"
 	"net/http"
-	"os"
 )
 
 func (r *Request) execute() {
 	// Prepare and execute the request
-	r.url = fmt.Sprintf(baseUrl, os.Getenv("API"), r.regionID, r.page)
-	// r.url = "http://localhost:8888/market/1/orders/all/"
+	r.url = fmt.Sprintf(baseUrl, r.regionID, r.page)
+
 	ratelimit.Add()
 	res, err := http.Get(r.url)
 	ratelimit.Sub()
@@ -22,50 +20,39 @@ func (r *Request) execute() {
 	// Request error
 	if err != nil {
 		log.Println("regionfull.execute: " + err.Error())
-		r.requestComplete(concatenator.NewRegion())
+		r.requestComplete(err)
 		return
 	}
 
 	// Parse rsp json to structure
-	rsp, err := parseResBody(res)
+	orders, err := parseResBody(res)
 	if err != nil {
 		log.Println("regionfull.execute parse:" + err.Error())
-		r.requestComplete(concatenator.NewRegion())
+		r.requestComplete(err)
 		return
 	}
 
-	// If this is the first page, start a channel
-	if r.requestBatch == nil {
-		r.requestBatch = make(chan *concatenator.Region, rsp.PageCount)
+	if r.Statistics == nil {
+		r.Statistics = concatenator.NewRegion(r.regionID)
 	}
 
-	// Enqueue all other pages if there are any
-	if r.page == 1 && rsp.PageCount > 1 {
-		for ii := 2; ii <= rsp.PageCount; ii++ {
-			apiqueue.Enqueue(r.newPage(ii))
+	for _, order := range orders {
+		if order.Buy {
+			continue
 		}
+		r.RawOrders = append(
+			r.RawOrders,
+			fmt.Sprintf("(%d,%d,%d,%.2f,%d)", order.Id, order.StationId, order.ItemId, order.Price, order.Volume),
+		)
+		r.Statistics.Add(order.Price, order.Volume, order.StationId, order.ItemId)
 	}
 
-	if r.page != 1 {
-		r.requestComplete(&rsp.Items)
+	log.Printf("Done with page %d of region %d", r.page, r.regionID)
+
+	if len(orders) < 10000 {
+		r.requestComplete(nil)
 		return
 	}
 
-	mainData := rsp.Items
-	mainData.RegionID = r.regionID
-
-	items := rsp.PageCount - 1
-	var subData *concatenator.Region
-	for items > 0 {
-		subData = <-r.requestBatch
-		mainData.Merge(subData)
-		items--
-		log.Printf("Region %d - %d pages remaining", r.regionID, items)
-	}
-
-	err = db.SaveMarketData(&mainData, r.regionID)
-	if err != nil {
-		log.Println(err)
-	}
-	return
+	apiqueue.Enqueue(r.newPage())
 }
