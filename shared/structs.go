@@ -14,12 +14,12 @@ func (n NextHref) String() string {
 type Order struct {
 	Buy       bool    `json:"buy"`
 	Issued    CCPTime `json:"issued"`
-	Price     float32 `json:"price"`
-	Volume    int64   `json:"volume"`
+	Price     float64 `json:"price"`
+	Volume    uint64  `json:"volume"`
 	Duration  int     `json:"duration"`
-	Id        int     `json:"id"`
-	StationID int     `json:"stationID"`
-	ItemID    int     `json:"type"`
+	Id        uint64  `json:"id"`
+	StationID uint64  `json:"stationID"`
+	ItemID    uint64  `json:"type"`
 }
 
 func (o *Order) ExpiryDate() string {
