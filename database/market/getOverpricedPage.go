@@ -27,7 +27,7 @@ func GetOverPricedPage(buyId, sellId int64, page int, sortCol string) []CompItem
 		page = 0
 	}
 	page = page * perPage
-	err := getOverPriceStmt.Select(&items, buyId, sellId, sortCol, page, perPage)
+	err := getOverPriceStmt.Select(&items, sellId, buyId, sortCol, page, perPage)
 	if err != nil {
 		log.Printf("getOverpriced query: " + err.Error())
 	}
