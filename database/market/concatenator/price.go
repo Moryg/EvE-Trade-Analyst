@@ -42,6 +42,13 @@ func (this *PriceStats) Add(price float64, volume uint64) {
 }
 
 func (this *PriceStats) Merge(other *PriceStats) {
+	if this.Min == 0 {
+		this.Min = other.Min
+		this.Mean = other.Mean
+		this.Max = other.Max
+		this.Volume = other.Volume
+		return
+	}
 	this.addAvg(other.Mean, other.Volume)
 	this.cmpMax(other.Max)
 	this.cmpMin(other.Min)

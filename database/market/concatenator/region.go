@@ -42,10 +42,15 @@ func (this *Region) Merge(other *Region) {
 	for station, miniMap := range other.Prices {
 		for item, otherPrice := range miniMap {
 			myPrice, ok := this.Prices[station][item]
+
 			if !ok {
-				myPrice = otherPrice
+				_, ok = this.Prices[station]
+				if !ok {
+					this.Prices[station] = make(map[uint64]*PriceStats)
+				}
+
+				myPrice = NewPrice(0, 0)
 				this.Prices[station][item] = myPrice
-				continue
 			}
 
 			myPrice.Merge(otherPrice)
