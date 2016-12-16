@@ -12,19 +12,19 @@ const (
 )
 
 type Request struct {
-	regionID     int
+	regionID     uint64
 	page         int
 	url          string
 	uid          string
 	requestBatch chan *concatenator.Region
 }
 
-func Update(id int) {
+func Update(id uint64) {
 	r := create(id)
 	apiqueue.Enqueue(r)
 }
 
-func create(regionID int) Request {
+func create(regionID uint64) Request {
 	r := Request{}
 	r.regionID = regionID
 	r.page = 1

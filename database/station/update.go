@@ -11,17 +11,10 @@ import (
 	"strings"
 )
 
-func Update(id, systemID int, name string) {
-	sql := "insert into `station` (`id`, `systemID`, `regionID`, `name`)" +
-		"SELECT ? AS `id`, ? as `systemId`, regionID, ? as `name`, ? AS `sortName`" +
-		" FROM `system` WHERE `system`.`id` = ?" +
-		" ON DUPLICATE KEY UPDATE" +
-		" `systemID` = VALUES(`systemID`)," +
-		" `regionID` = VALUES(`regionID`)," +
-		" `name` = VALUES(`name`)" +
-		" `sortName` = VALUES(`sortName`);"
+func Update(id uint64, systemID int, name string) {
+	sql := "CALL saveStation(?, ?, ?, ?)"
 
-	_, err := DB.Exec(sql, id, systemID, name, systemID, getSortName(name))
+	_, err := DB.Exec(sql, id, systemID, name, getSortName(name))
 	if err != nil {
 		log.Println("station.update: " + err.Error())
 	}

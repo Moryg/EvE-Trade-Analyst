@@ -2,16 +2,54 @@ package control
 
 import (
 	"github.com/moryg/eve_analyst/apiqueue/requests/market/regionfull"
+	stationApi "github.com/moryg/eve_analyst/apiqueue/requests/station"
+	"github.com/moryg/eve_analyst/database/region"
+	"github.com/moryg/eve_analyst/database/station"
+	"log"
+	"time"
+)
+
+var (
+	regionUpdater *time.Ticker
 )
 
 func BootUp() {
-	MarketFull()
+	if regionUpdater != nil {
+		log.Fatal("Ticker is not nil")
+	}
+
+	regionUpdater = time.NewTicker(time.Second * 30)
+
+	go func() {
+		for {
+			<-regionUpdater.C
+			go MarketBatch()
+			go StationBatch()
+		}
+	}()
+
+	go MarketBatch()
+	go StationBatch()
 }
 
-func MarketFull() {
+func StationBatch() {
+	missing := station.GetMissingStations()
+	for _, id := range missing {
+		stationApi.Update(id)
+	}
+}
+
+func MarketBatch() {
+
+	res := region.GetUpdatableRegions()
+	for _, id := range res {
+		log.Printf("Starting update of region %d", id)
+		regionfull.Update(id)
+	}
 	// TMP - do not update other regions for now
-	regionfull.Update(10000002) // The Forge
+	return
 	regionfull.Update(10000047) // Providence
+	// regionfull.Update(10000002) // The Forge
 	// regionfull.Update(10000043) // Domain
 	// regionfull.Update(10000001) // Derelik
 	// regionfull.Update(10000011)

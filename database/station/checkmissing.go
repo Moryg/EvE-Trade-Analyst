@@ -6,20 +6,16 @@ package station
 import (
 	. "github.com/moryg/eve_analyst/database"
 	"log"
-	"strconv"
+	// "strconv"
 )
 
-func GetMissingStations() []int {
+func GetMissingStations() []uint64 {
 	// TODO - OPTIMIZE Feels like it performs slowly for what it does
 	var (
-		id  string
-		ids []int
+		id  uint64
+		ids []uint64
 	)
-	sql := "SELECT DISTINCT `stationId` FROM `orderSell` `ord`" +
-		" LEFT JOIN `station` `stat`" +
-		" ON `stat`.`id` = `ord`.`stationId`" +
-		" WHERE `stat`.`id` IS NULL" +
-		" AND `stationId` < 1000000000000;" // Only stations, no citadels
+	sql := "SELECT `t1`.`id` FROM (SELECT DISTINCT `stationId` `id` FROM `orderSell` WHERE `stationId` < 1000000000000) `t1` LEFT JOIN `station` ON `station`.`id` = `t1`.`id` WHERE `station`.`id` IS NULL LIMIT 100;"
 
 	rows, err := DB.Query(sql)
 	if err != nil {
@@ -36,10 +32,11 @@ func GetMissingStations() []int {
 			continue
 		}
 
-		iId, err := strconv.Atoi(id)
-		if err == nil {
-			ids = append(ids, iId)
-		}
+		ids = append(ids, id)
+		// iId, err := strconv.Atoi(id)
+		// if err == nil {
+		// 	ids = append(ids, iId)
+		// }
 	}
 
 	return ids

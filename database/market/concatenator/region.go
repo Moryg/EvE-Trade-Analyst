@@ -8,7 +8,7 @@ import (
 
 type Region struct {
 	Prices   map[uint64]map[uint64]*PriceStats
-	RegionID int
+	RegionID uint64
 }
 
 func NewRegion() *Region {
