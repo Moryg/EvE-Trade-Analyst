@@ -19,7 +19,7 @@ type deconJson struct {
 
 func TestJsonDecompile(test *testing.T) {
 	jsonFiles := []string{"./full_sample.json", "./full_sample_pg2.json"}
-	masterRegion := concatenator.NewRegion()
+
 	src, err := ioutil.ReadFile("./full_stats.json")
 	if err != nil {
 		test.Fatal(err)
@@ -36,18 +36,28 @@ func TestJsonDecompile(test *testing.T) {
 		test.Fatal(err)
 	}
 
-	for _, file := range jsonFiles {
-		raw, err := ioutil.ReadFile(file)
-		if err != nil {
-			test.Fatal(err)
-		}
+	raw, err := ioutil.ReadFile(jsonFiles[0])
+	if err != nil {
+		test.Fatal(err)
+	}
 
-		err = json.Unmarshal(raw, &holder)
-		if err != nil {
-			test.Fatal(err)
-		}
+	err = json.Unmarshal(raw, &holder)
+	if err != nil {
+		test.Fatal(err)
+	}
 
-		masterRegion.Merge(&holder.Items)
+	masterRegion := &(holder.Items)
+
+	ch := make(chan *concatenator.Region)
+	errChan := make(chan error)
+
+	go separateThread(errChan, ch)
+
+	select {
+	case other := <-ch:
+		masterRegion.Merge(other)
+	case err := <-errChan:
+		test.Fatal(err)
 	}
 
 	if len(masterRegion.Prices) != len(static) {
@@ -81,4 +91,20 @@ func TestJsonDecompile(test *testing.T) {
 			}
 		}
 	}
+}
+
+func separateThread(errchan chan error, ch chan *concatenator.Region) {
+	var holder deconJson
+
+	raw, err := ioutil.ReadFile("./full_sample_pg2.json")
+	if err != nil {
+		errchan <- err
+	}
+
+	err = json.Unmarshal(raw, &holder)
+	if err != nil {
+		errchan <- err
+	}
+
+	ch <- &(holder.Items)
 }
